@@ -1,0 +1,21 @@
+<head>
+  <title>personalyt</title>
+</head>
+
+<body>
+  {{> hello}}
+</body>
+
+<template name="hello">
+  <form id="formid" method="post">
+<input type="text" id="yturl" name="yturl" value="">
+  </form>
+  <ul>
+    {{#each yturl}}
+  <li>{{this.url}}</li>
+  {{/each}}
+</ul>
+
+  <div id="player"></div>
+
+</template>
