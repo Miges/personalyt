@@ -35,7 +35,12 @@ if (Meteor.isClient) {
 			}),
 		});
 
-		var theSong = SongsInDB.findOne({ "youtube.videoId": this.data.id.videoId });
+		loadTags(this);
+
+	});
+
+	var loadTags = function (template) {
+		var theSong = SongsInDB.findOne({ "youtube.videoId": template.data.id.videoId });
 		if (theSong)
 		{
 			console.log("SONG!", theSong);
@@ -48,14 +53,13 @@ if (Meteor.isClient) {
 				var theTag = Tags.findOne(eachTagId);
 				theTagsString += "#" + theTag.text + " ";
 			});
-			this.$('#' + this.data.id.videoId).val(theTagsString);
+			this.$('#' + template.data.id.videoId).val(theTagsString);
 		}
 		else
 		{
-			this.$('#' + this.data.id.videoId).val("");
+			this.$('#' + template.data.id.videoId).val("");
 		}
-
-	});
+	}
 
 	Template.searchResult.helpers({
 		settings: function() {
@@ -78,12 +82,30 @@ if (Meteor.isClient) {
 			console.log(event.target.dataset.videoid);
 			console.log(template.$('#' + event.target.id).val());
 		},
+		"autocompleteselect .tags-ac": function(event, template, doc) {
+			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
+			var song_id = theSong && theSong._id;
+			if (!theSong)
+			{
+				theSong = {};
+				theSong.youtube = {
+					videoId: template.data.id.videoId
+				};
+				song_id = SongsInDB.insert(theSong);
+			}
+			var newTagId = doc._id;
 
-		'blur .tags-ac': function (event, template) {
-			var tagsInput = event.target.value.split("#");
-			if (tagsInput.length === 0 || (tagsInput.length === 1 && tagsInput[0].trim() === ""))			{
+			if (theSong.tagIds.indexOf(newTagId) !== -1){
 				return;
 			}
+			SongsInDB.update({ _id: song_id}, { $push: { tagIds: newTagId }});
+
+			loadTags(template);
+		},
+		'blur .tags-ac': function (event, template) {
+			var tagsInput = template.$('#'+ template.data.id.videoId).val().split('#');
+			console.log("EVENT!", tagsInput);
+			console.log("TAGS SPLIT!", event);
 
 			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
 			var song_id = theSong && theSong._id;
@@ -105,21 +127,25 @@ if (Meteor.isClient) {
 				}
 				var inDB = Tags.findOne({text: theTag});
 				if (inDB) {
-					tagIds.push(inDB._id);
 					console.log("IS IN DB");
-					return;
+					if (theSong.tagIds.indexOf(inDB._id) !== -1){
+						return;
+					}
+					tagIds.push(inDB._id);
 				}
 				else {
 					console.log("INSERTING!");
 					var _id = Tags.insert({text: theTag});
-					tagIds.push(_id);setTimeout
+					tagIds.push(_id);
 				}
 			});
-			SongsInDB.update({ _id: song_id}, { $set: { tagIds: tagIds }});
+			SongsInDB.update({ _id: song_id}, { $set: { tagIds:  tagIds }});
+
+			loadTags(template);
 		},
 	});
 
-	Template.hello.onRendered(function(){
+	Template.main.onRendered(function(){
 		this.subscribe('tags', function(){
 		});
 
@@ -154,7 +180,7 @@ if (Meteor.isClient) {
 			videoId: theSong.youtube.videoId,
 			playerVars:
 			{
-				controls: 0,
+				controls: 1,
 			},
 			// Events like ready, state change,
 			events: {
@@ -185,17 +211,16 @@ if (Meteor.isClient) {
 
 
 
-	Template.hello.helpers({
+	Template.main.helpers({
 		songs: function () {
 			return SongsInDB.find({}, {sort: { dateAdded: 1} });
 		},
 		searchResults: function () {
 			return searchResults.get();
-
 		},
 	});
 
-	Template.hello.events({
+	Template.main.events({
 		'submit #formid': function (event) {
 			// increment the counter when button is clicked
 			SongsInDB.insert({youtube: {videoId: event.target.yturl.value }, dateAdded: new Date()}, function(err)
@@ -205,7 +230,6 @@ if (Meteor.isClient) {
 			return false;
 		},
 		'submit #search': function (event) {
-			event.preventDefault();
 			Meteor.call('searchVideos', event.target.query.value , function(err, res)
 			{
 				searchResults.set(res.items);

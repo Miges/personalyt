@@ -1,20 +1,13 @@
-<head>
-    <title>personalyt</title>
-</head>
-
-<body>
-<div class="container">
-    {{> hello}}
-</div>
-</body>
-
-<template name="hello">
-    <form id="formid" method="post">
-        <input type="text" id="yturl" name="yturl" value="">
-    </form>
-    <form id="search" method="post">
-        <input type="text" id="query" name="query" value="">
-    </form>
+<template name="main">
+    <div class="row">
+        <form id="search" method="post">
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control search-input input-lg" id="query" name="query"/>
+                <span class="glyphicon glyphicon-search form-control-feedback"></span>
+            </div>
+        </form>
+    </div>
+    <div class="row">
     <ul>
         {{#each songs}}
             <li>{{this.youtube.videoId}}</li>
@@ -30,6 +23,7 @@
     {{/each}}
 
     <div id="player"></div>
+    </div>
 
 </template>
 <template name="searchResult">
