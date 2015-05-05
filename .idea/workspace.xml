@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f59909e5-5b4b-45a0-8a90-68446acc2cf4" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/server/methods.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.meteor/packages" afterPath="$PROJECT_DIR$/.meteor/packages" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/personalyt.html" afterPath="$PROJECT_DIR$/personalyt.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/personalyt.js" afterPath="$PROJECT_DIR$/personalyt.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.meteor/versions" afterPath="$PROJECT_DIR$/.meteor/versions" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="personalyt.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,21 +27,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="personalyt.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="personalyt.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/personalyt.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1080" max-vertical-offset="3585">
-              <caret line="104" column="21" selection-start-line="104" selection-start-column="21" selection-end-line="104" selection-end-column="21" />
+            <state vertical-scroll-proportion="0.06444683" vertical-offset="0" max-vertical-offset="3585">
+              <caret line="4" column="32" selection-start-line="4" selection-start-column="32" selection-end-line="4" selection-end-column="32" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="personalyt.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="personalyt.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/personalyt.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.68791944" vertical-offset="0" max-vertical-offset="894">
-              <caret line="41" column="119" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="119" />
+            <state vertical-scroll-proportion="-5.0" vertical-offset="0" max-vertical-offset="840">
+              <caret line="8" column="7" selection-start-line="8" selection-start-column="7" selection-end-line="8" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -82,9 +76,9 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/server/methods.js" />
+        <option value="$PROJECT_DIR$/.meteor/packages" />
         <option value="$PROJECT_DIR$/personalyt.html" />
         <option value="$PROJECT_DIR$/personalyt.js" />
-        <option value="$PROJECT_DIR$/.meteor/packages" />
       </list>
     </option>
   </component>
@@ -280,14 +274,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/personalyt.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1080" max-vertical-offset="3585">
-          <caret line="104" column="21" selection-start-line="104" selection-start-column="21" selection-end-line="104" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.meteor/packages">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-13.8" vertical-offset="0" max-vertical-offset="435">
@@ -298,8 +284,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/personalyt.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.68791944" vertical-offset="0" max-vertical-offset="894">
-          <caret line="41" column="119" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="119" />
+        <state vertical-scroll-proportion="-5.0" vertical-offset="0" max-vertical-offset="840">
+          <caret line="8" column="7" selection-start-line="8" selection-start-column="7" selection-end-line="8" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavaScriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/DHTML.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.1546724" vertical-offset="16880" max-vertical-offset="72015">
+          <caret line="1197" column="17" selection-start-line="1197" selection-start-column="17" selection-end-line="1197" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/personalyt.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.06444683" vertical-offset="0" max-vertical-offset="3585">
+          <caret line="4" column="32" selection-start-line="4" selection-start-column="32" selection-end-line="4" selection-end-column="32" />
           <folding />
         </state>
       </provider>

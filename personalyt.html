@@ -1,35 +1,35 @@
 <head>
-  <title>personalyt</title>
+    <title>personalyt</title>
 </head>
 
 <body>
 <div class="container">
-  {{> hello}}
+    {{> hello}}
 </div>
 </body>
 
 <template name="hello">
-  <form id="formid" method="post">
-<input type="text" id="yturl" name="yturl" value="">
-  </form>
-  <form id="search" method="post">
-<input type="text" id="query" name="query" value="">
-  </form>
-  <ul>
-    {{#each yturl}}
-  <li>{{this.url}}</li>
-  {{/each}}
-</ul>
+    <form id="formid" method="post">
+        <input type="text" id="yturl" name="yturl" value="">
+    </form>
+    <form id="search" method="post">
+        <input type="text" id="query" name="query" value="">
+    </form>
+    <ul>
+        {{#each songs}}
+            <li>{{this.youtube.videoId}}</li>
+        {{/each}}
+    </ul>
 
     <p>
-        <h3>Results</h3>
+    <h3>Results</h3>
     </p>
 
     {{#each searchResults}}
-     {{>searchResult}}
-  {{/each}}
+        {{>searchResult}}
+    {{/each}}
 
-  <div id="player"></div>
+    <div id="player"></div>
 
 </template>
 <template name="searchResult">
@@ -39,8 +39,12 @@
         </div>
         <div class="col-xs-3">{{snippet.title}}</div>
         <div class="col-xs-3">
-            <input id="select2{{id.videoId}}" class="form-control select2" data-placeholder="tag this video" value=""/>
+            {{> inputAutocomplete settings=settings id=id.videoId class="input form-control tags-ac" placeholder="tags"}}
         </div>
         <div class="col-xs-3"><div class="slider" id="slider{{id.videoId}}" data-videoid="{{id.videoId}}"></div></div>
     </div>
+</template>
+
+<template name="tag">
+    {{text}}
 </template>

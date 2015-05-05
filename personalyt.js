@@ -1,8 +1,8 @@
 
-Urls = new Mongo.Collection('ytlist');
+SongsInDB = new Mongo.Collection('songsInDB');
 Tags = new Mongo.Collection('tags');
 
-var played = [];
+var played = new ReactiveVar([]);
 var ready = false;
 var readyCollection = false;
 if (Meteor.isClient) {
@@ -16,8 +16,6 @@ if (Meteor.isClient) {
 
 
 	onYouTubeIframeAPIReady = function () {
-
-		console.log("************************ ready set");
 		// New Video Player, the first argument is the id of the div.
 		// Make sure it's a global variable.
 		ready = true;
@@ -25,50 +23,7 @@ if (Meteor.isClient) {
 
 	YT.load();
 
-
-var getSelect2Data = function () {
-	var tags = Tags.find().fetch();
-	var currentId = 0;
-	var select2data = _.map(tags, function (val) {
-		return _.extend({id: currentId++}, val);
-	});
-
-	return select2data;
-}
-var SetupSelect2 = function (element) {
-	element.select2({
-		allowClear: true,
-		data: getSelect2Data(),
-		tags: "true",
-		createSearchChoice: function (term) {
-			return {id: -1, text: term, isANewTag: true};
-		},
-		initSelection: function (element, callback) {
-			//callback(initTags);
-		}
-
-	});
-};
-
-	var ResetSelect2s = function () {
-		$('.select2').select2({
-			allowClear: true,
-			data: getSelect2Data(),
-			tags: "true",
-			createSearchChoice: function (term) {
-				return {id: -1, text: term, isANewTag: true};
-			},
-			initSelection: function (element, callback) {
-				//callback(initTags);
-			}
-
-		});
-	}
 	Template.searchResult.onRendered(function() {
-		console.log( '#select2' + this.data.id.videoId.toString);
-		console.log( this.$('#select2' + this.data.id.videoId.toString()));
-		SetupSelect2(this.$('#select2' + this.data.id.videoId.toString()));
-
 		this.$('#slider' + this.data.id.videoId.toString()).noUiSlider({
 			start: [50],
 			range: {
@@ -79,44 +34,96 @@ var SetupSelect2 = function (element) {
 				decimals: 0
 			}),
 		});
+
+		var theSong = SongsInDB.findOne({ "youtube.videoId": this.data.id.videoId });
+		if (theSong)
+		{
+			console.log("SONG!", theSong);
+		}
+		if (theSong && theSong.tagIds)
+		{
+			console.log();
+			var theTagsString = "";
+			theSong.tagIds.forEach(function (eachTagId) {
+				var theTag = Tags.findOne(eachTagId);
+				theTagsString += "#" + theTag.text + " ";
+			});
+			this.$('#' + this.data.id.videoId).val(theTagsString);
+		}
+		else
+		{
+			this.$('#' + this.data.id.videoId).val("");
+		}
+
 	});
 
+	Template.searchResult.helpers({
+		settings: function() {
+			return {
+				position: "bottom",
+				limit: 20,
+				rules: [
+					{
+						token: '#',
+						collection: Tags,
+						field: "text",
+						template: Template.tag,
+					},
+				]
+			};
+		}
+	});
 	Template.searchResult.events({
 		'change .slider': function (event, template) {
 			console.log(event.target.dataset.videoid);
 			console.log(template.$('#' + event.target.id).val());
 		},
 
-		'change .select2': function (event, template) {
-			var thePage = template.data;
-			//I.e. it was cleared.
-			if (!event.added && event.removed)
-			{
+		'blur .tags-ac': function (event, template) {
+			var tagsInput = event.target.value.split("#");
+			if (tagsInput.length === 0 || (tagsInput.length === 1 && tagsInput[0].trim() === ""))			{
+				return;
+			}
 
-			}
-			//I.e. it was changed.
-			else if (event.added)
+			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
+			var song_id = theSong && theSong._id;
+			if (!theSong)
 			{
-					if (event.added.isANewTag)
-					{
-						event.added.isANewTag = undefined;
-						event.added.id = undefined;
-						Tags.insert(event.added);
-					}
+				theSong = {};
+				theSong.youtube = {
+					videoId: template.data.id.videoId
+				};
+				song_id = SongsInDB.insert(theSong);
 			}
-			else
-			{
-
-			}
-		}
+			var tagIds = [];
+			tagsInput.forEach(function (tag) {
+				var theTag = tag.trim();
+				console.log(theTag);
+				if (theTag == "") {
+					console.log("IS NULL");
+					return;
+				}
+				var inDB = Tags.findOne({text: theTag});
+				if (inDB) {
+					tagIds.push(inDB._id);
+					console.log("IS IN DB");
+					return;
+				}
+				else {
+					console.log("INSERTING!");
+					var _id = Tags.insert({text: theTag});
+					tagIds.push(_id);setTimeout
+				}
+			});
+			SongsInDB.update({ _id: song_id}, { $set: { tagIds: tagIds }});
+		},
 	});
 
 	Template.hello.onRendered(function(){
 		this.subscribe('tags', function(){
 		});
 
-		this.subscribe('urls', function(){
-			console.log("loaded collection");
+		this.subscribe('songsInDB', function(){
 			readyCollection = true;
 		});
 		timeLoop();
@@ -124,31 +131,27 @@ var SetupSelect2 = function (element) {
 
 	var timeLoop = function()
 	{
-		console.log("inTL");
 		if (!ready || !readyCollection)
 		{
 			Meteor.setTimeout(timeLoop, 1000);
-			console.log("not ready");
 		}
 		else
 		{
-			console.log("ready");
 			setupYT();
 		}
 	};
 
 	var setupYT = function()
 	{
-		var x = Urls.findOne();
-		console.log("V ID", x);
-		played.push(x.url);
+		var theSong = SongsInDB.findOne();
+		played.set(played.get().push(theSong.youtube.videoId));
 		player = new YT.Player("player", {
 
 			height: "400",
 			width: "600",
 
 			// videoId is the "v" in URL (ex: http://www.youtube.com/watch?v=LdH1hSWGFGU, videoId = "LdH1hSWGFGU")
-			videoId: x.url,
+			videoId: theSong.youtube.videoId,
 			playerVars:
 			{
 				controls: 0,
@@ -167,10 +170,9 @@ var SetupSelect2 = function (element) {
 					//A video ended
 					if (event.data === 0)
 					{
-						var x = Urls.findOne({url: { $nin: played}});
-						played.push(x.url);
-						console.log("PLAYED:", played);
-						player.loadVideoById(x.url);
+						theSong = SongsInDB.findOne({"youtube.videoId": { $nin: played.get()}});
+						played.push(theSong.youtube.videoId);
+						player.loadVideoById(theSong.youtube.videoId);
 					}
 				},
 
@@ -184,8 +186,8 @@ var SetupSelect2 = function (element) {
 
 
 	Template.hello.helpers({
-		yturl: function () {
-			return Urls.find({}, {sort: { dateAdded: 1} });
+		songs: function () {
+			return SongsInDB.find({}, {sort: { dateAdded: 1} });
 		},
 		searchResults: function () {
 			return searchResults.get();
@@ -195,9 +197,8 @@ var SetupSelect2 = function (element) {
 
 	Template.hello.events({
 		'submit #formid': function (event) {
-			console.log(event);
 			// increment the counter when button is clicked
-			Urls.insert({url: event.target.yturl.value, dateAdded: new Date()}, function(err)
+			SongsInDB.insert({youtube: {videoId: event.target.yturl.value }, dateAdded: new Date()}, function(err)
 			{
 				console.log(err);
 			});
@@ -208,7 +209,6 @@ var SetupSelect2 = function (element) {
 			Meteor.call('searchVideos', event.target.query.value , function(err, res)
 			{
 				searchResults.set(res.items);
-				console.log(res.items);
 			});
 			return false;
 		}
@@ -219,9 +219,9 @@ if (Meteor.isServer) {
 	Meteor.startup(function () {
 		// code to run on server at startup
 	});
-	Meteor.publish('urls', function()
+	Meteor.publish('songsInDB', function()
 	{
-		return Urls.find();
+		return SongsInDB.find();
 	});
 	Meteor.publish('tags', function()
 	{
