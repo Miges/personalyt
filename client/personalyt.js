@@ -1,0 +1,250 @@
+var ready = false;
+var readyCollection = false;
+var searchResults = new ReactiveVar([]);
+if (Meteor.isClient) {
+
+
+	onYouTubeIframeAPIReady = function () {
+		// New Video Player, the first argument is the id of the div.
+		// Make sure it's a global variable.
+		ready = true;
+	};
+
+	YT.load();
+
+	Template.searchResult.onRendered(function() {
+		Session.set('songsPlayed',[]);
+		this.autorun(function () {
+			var temp = Template.instance();
+			var vid = Template.currentData().id.videoId;
+			var theSong = SongsInDB.findOne({"youtube.videoId": vid});
+			var initRating =  50;
+			if (theSong && theSong.rating)
+			{
+				initRating = theSong.rating;
+			}
+			temp.$('#slider' + vid).noUiSlider({
+				start: [initRating],
+				range: {
+					'min': 1,
+					'max': 100
+				},
+				format: wNumb({
+					decimals: 0
+				}),
+			}, true);
+
+
+			resetTagControls(temp);
+
+
+			if (!theSong || !theSong.tagIds){
+				temp.$('#at' + vid.toString()).val("");
+				return;
+			}
+			var initVal = "";
+			theSong.tagIds.forEach(function (tag_id) {
+				var theTag = Tags.findOne({_id: tag_id});
+				initVal += "#" + theTag.text + " ";
+			});
+			temp.$('#at' + vid.toString()).val(initVal);
+
+
+		});
+
+	});
+
+	var resetTagControls = function (temp) {
+		var allTags = Tags.find().fetch();
+		var acData = _.map(allTags, function (tag) {
+			return tag.text;
+		});
+
+		temp.$('.tags-ac').atwho({
+			at: "#",
+			data: acData,
+		});
+	};
+
+	Template.searchResult.helpers({
+		'alreadyInMySongs': function () {
+			var vid = this && this.id && this.id.videoId;
+			var theSong = SongsInDB.findOne({"youtube.videoId": vid });
+			if(theSong)
+			{
+				return "alreadyInMySongs";
+			}
+
+		}
+	});
+	Template.searchResult.events({
+		'change .slider': function (event, template) {
+
+			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
+			if (!theSong || !theSong._id){
+				return;
+			}
+			var newRating = template.$('#' + event.target.id).val();
+			SongsInDB.update({ _id: theSong._id}, { $set: { rating: newRating }});
+
+		},
+		'blur .tags-ac': function (event, template) {
+			var tagsInput = event.target.value.split("#");
+
+			if (tagsInput.length === 0 || (tagsInput.length === 1 && tagsInput[0].trim() === ""))			{
+				return;
+			}
+
+			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
+			var song_id = theSong && theSong._id;
+			if (!theSong)
+			{
+				theSong = {};
+				theSong.dateAdded = new Date();
+				theSong.youtube = {
+					videoId: template.data.id.videoId
+				};
+				try {
+					console.log(template.data);
+					theSong.name = template.data.snippet.title;
+
+					theSong.thumbnailUrl = template.data.snippet.thumbnails.default.url;
+				}
+				catch(e)
+				{}
+				song_id = SongsInDB.insert(theSong);
+			}
+			var tagIds = [];
+			tagsInput.forEach(function (tag) {
+				var theTag = tag.trim();
+				console.log(theTag);
+
+				if (theTag === "") {
+					console.log("IS NULL");
+					return;
+				}
+				var inDB = Tags.findOne({text: theTag});
+				if (inDB) {
+					tagIds.push(inDB._id);
+					console.log("IS IN DB");
+					return;
+				}
+				else {
+					console.log("INSERTING!");
+					var _id = Tags.insert({text: theTag});
+					tagIds.push(_id);setTimeout
+					resetTagControls(template);
+				}
+			});
+			SongsInDB.update({ _id: song_id}, { $set: { tagIds: tagIds }});
+		},
+	});
+
+	Template.main.onRendered(function(){
+		this.subscribe('tags', function(){
+		});
+
+		this.subscribe('songsInDB', function(){
+			readyCollection = true;
+		});
+		timeLoop();
+	});
+
+	var timeLoop = function()
+	{
+		if (!ready || !readyCollection)
+		{
+			Meteor.setTimeout(timeLoop, 1000);
+		}
+		else
+		{
+			setupYT();
+		}
+	};
+
+	var setupYT = function()
+	{
+		var theSong = SongsInDB.findOne();
+		Session.set('songsPlayed',[theSong.youtube.videoId]);
+		player = new YT.Player("player", {
+
+			height: "400",
+			width: "600",
+
+			videoId: theSong.youtube.videoId,
+			playerVars:
+			{
+				controls: 1,
+			},
+			// Events like ready, state change,
+			events: {
+
+				onReady: function (event) {
+
+					// Play video when player ready.
+					event.target.playVideo();
+				},
+
+				onStateChange: function (event) {
+					console.log("STATE CHANGE!", event, arguments);
+					//A video ended
+					if (event.data === 0)
+					{
+						var playedArr = Session.get('songsPlayed');
+						playedArr.push(theSong.youtube.videoId);
+						theSong = SongsInDB.findOne({"youtube.videoId": { $nin: playedArr}});
+						player.loadVideoById(theSong.youtube.videoId);
+
+						Session.set('songsPlayed',playedArr);
+					}
+				},
+
+			}
+
+		});
+
+	}
+
+
+
+
+	Template.main.helpers({
+		songs: function () {
+			return SongsInDB.find({}, {sort: { dateAdded: -1} });
+		},
+		searchResults: function () {
+			return searchResults.get();
+		},
+		tagText: function (tag_id) {
+			var x = Tags.findOne(tag_id);
+			return x && x.text;
+		},
+	});
+
+	Template.main.events({
+		'submit #search': function (event) {
+			Meteor.call('searchVideos', event.target.query.value , function(err, res)
+			{
+				searchResults.set(res.items);
+			});
+			return false;
+		},
+		'click .remove-song': function (event,template) {
+			var songId = event.target.dataset.songid;
+			if(songId)			{
+				SongsInDB.remove({_id: songId});
+			}
+		},
+		'click .changeSong': function (event,template) {
+			var videoId = event.target.dataset.vid;
+
+			var playedArr = Session.get('songsPlayed');
+			playedArr.push(videoId);
+
+			player.loadVideoById(videoId);
+
+			Session.set('songsPlayed',playedArr);
+		},
+	});
+}
+

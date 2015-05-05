@@ -1,0 +1,63 @@
+<template name="main">
+    <div class="row">
+        <form id="search" method="post">
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control search-input input-lg" id="query" name="query"/>
+                <span class="glyphicon glyphicon-search form-control-feedback"></span>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <h3>My Songs</h3>
+            {{#each songs}}
+                <div class="alert alert-success" role="alert"><a href="#" class="changeSong" data-vid="{{this.youtube.videoId}}">{{this.name}} </a> <span class="badge">{{this.rating}}</span> <span class="glyphicon glyphicon-remove remove-song" data-songid="{{this._id}}" aria-hidden="true"></span>
+                    {{#each tagIds}}
+                        <span class="label label-default">#{{tagText this}}</span>
+                    {{/each}}
+                </div>
+            {{/each}}
+        </div>
+        <div class="col-md-8">
+            {{#if searchResults}}
+                <p>
+                <h3>Results</h3>
+                </p>
+                <div class="row">
+                    <div class="col-xs-3"><h4></h4></div>
+                    <div class="col-xs-3"><h4>Title</h4></div>
+                    <div class="col-xs-3"><h4>#tags - Please Add!</h4></div>
+                    <div class="col-xs-3"><h4>How Much I Like It</h4></div>
+                </div>
+                <hr/>
+
+                {{#each searchResults}}
+                    {{>searchResult}}
+                {{/each}}
+            {{/if}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="player"></div>
+        </div>
+    </div>
+
+
+</template>
+<template name="searchResult">
+    <div class="row {{alreadyInMySongs}}">
+        <div class="col-xs-3">
+            <img src="{{snippet.thumbnails.default.url}}" alt=""/>
+        </div>
+        <div class="col-xs-3">{{snippet.title}}</div>
+        <div class="col-xs-3">
+            <input type="textarea"  id="at{{id.videoId}}" class="input form-control tags-ac" rows="1"/>
+        </div>
+        <div class="col-xs-3"><div class="slider" id="slider{{id.videoId}}" data-videoid="{{id.videoId}}"></div></div>
+    </div>
+</template>
+
+<template name="tag">
+    {{text}}
+</template>

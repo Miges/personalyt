@@ -1,0 +1,11 @@
+/* CSS declarations go here */
+.search-input {
+    /*width:80%;*/
+}
+.alreadyInMySongs {
+   background-color: #FAECD2;
+}
+.remove-song
+{
+    color: darkred;
+}

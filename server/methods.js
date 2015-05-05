@@ -11,7 +11,7 @@ Meteor.methods({
 				type: "video",
 				maxResults: 5,
 				q: search,
-				maxResults: 50,
+				maxResults: 10,
 			}, function(err,res)
 			{
 				done(err, res);
