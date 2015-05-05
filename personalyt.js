@@ -118,5 +118,8 @@ if (Meteor.isServer) {
   Meteor.publish('urls', function()
   {
     return Urls.find();
-  })
+  });
+
+
+  
 }
