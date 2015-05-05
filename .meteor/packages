@@ -9,5 +9,16 @@ meteor-platform
 insecure
 
 adrianliaw:youtube-iframe-api
-mrt:jquery-raty
+rcy:nouislider
 renaldo:youtube-api
+
+meteorhacks:async
+
+reactive-var
+
+twbs:bootstrap
+
+natestrauser:select2
+zimme:select2-bootstrap3-css
+
+mizzao:autocomplete

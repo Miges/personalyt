@@ -3,12 +3,17 @@
 </head>
 
 <body>
+<div class="container">
   {{> hello}}
+</div>
 </body>
 
 <template name="hello">
   <form id="formid" method="post">
 <input type="text" id="yturl" name="yturl" value="">
+  </form>
+  <form id="search" method="post">
+<input type="text" id="query" name="query" value="">
   </form>
   <ul>
     {{#each yturl}}
@@ -16,6 +21,26 @@
   {{/each}}
 </ul>
 
+    <p>
+        <h3>Results</h3>
+    </p>
+
+    {{#each searchResults}}
+     {{>searchResult}}
+  {{/each}}
+
   <div id="player"></div>
 
+</template>
+<template name="searchResult">
+    <div class="row">
+        <div class="col-xs-3">
+            <img src="{{snippet.thumbnails.default.url}}" alt=""/>
+        </div>
+        <div class="col-xs-3">{{snippet.title}}</div>
+        <div class="col-xs-3">
+            <input id="select2{{id.videoId}}" class="form-control select2" data-placeholder="tag this video" value=""/>
+        </div>
+        <div class="col-xs-3"><div class="slider" id="slider{{id.videoId}}" data-videoid="{{id.videoId}}"></div></div>
+    </div>
 </template>
