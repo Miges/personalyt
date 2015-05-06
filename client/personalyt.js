@@ -273,8 +273,9 @@ theParentTemp = this;
 
 			Session.set('songsPlayed',playedArr);
 		},
-		'submit #tagsForm': function (event, template) {
-			var theTags = getInputTags(template);
+		'submit #tagsForm': function (event) {
+			event.preventDefault();
+			var theTags = getInputTags(theParentTemp);
 			var theSong = getWeightedSong(theTags);
 			var playedArr = Session.get('songsPlayed');
 			playedArr.push(theSong.youtube.videoId);
