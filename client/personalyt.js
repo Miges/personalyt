@@ -282,6 +282,8 @@ theParentTemp = this;
 			player.loadVideoById(theSong.youtube.videoId);
 
 			Session.set('songsPlayed',playedArr);
+
+			return false;
 		},
 	});
 }
