@@ -273,7 +273,7 @@ theParentTemp = this;
 
 			Session.set('songsPlayed',playedArr);
 		},
-		'change #tagToPlay': function (event, template) {
+		'submit #tagsForm': function (event, template) {
 			var theTags = getInputTags(template);
 			var theSong = getWeightedSong(theTags);
 			var playedArr = Session.get('songsPlayed');
