@@ -1,6 +1,8 @@
 var ready = false;
 var readyCollection = false;
 var searchResults = new ReactiveVar([]);
+
+var theParentTemp;
 if (Meteor.isClient) {
 
 
@@ -134,10 +136,13 @@ if (Meteor.isClient) {
 					var _id = Tags.insert({text: theTag});
 					tagIds.push(_id);setTimeout
 					resetTagControls(template);
+					resetTagControls(theParentTemp);
 				}
 			});
 			SongsInDB.update({ _id: song_id}, { $set: { tagIds: tagIds }});
+
 		},
+
 	});
 
 	Template.main.onRendered(function(){
@@ -148,6 +153,8 @@ if (Meteor.isClient) {
 			readyCollection = true;
 		});
 		timeLoop();
+theParentTemp = this;
+		resetTagControls(this);
 	});
 
 	var timeLoop = function()
@@ -164,7 +171,9 @@ if (Meteor.isClient) {
 
 	var setupYT = function()
 	{
-		var theSong = SongsInDB.findOne();
+		var temp = Template.instance();
+		var theTag = temp.$('#tagToPlay').val();
+		var theSong = getWeightedSong(theTag);
 		Session.set('songsPlayed',[theSong.youtube.videoId]);
 		player = new YT.Player("player", {
 
@@ -192,7 +201,9 @@ if (Meteor.isClient) {
 					{
 						var playedArr = Session.get('songsPlayed');
 						playedArr.push(theSong.youtube.videoId);
-						theSong = SongsInDB.findOne({"youtube.videoId": { $nin: playedArr}});
+						//theSong = SongsInDB.findOne({"youtube.videoId": { $nin: playedArr}});
+						var theTag = temp.$('#tagToPlay').val();
+						var theSong = getWeightedSong(theTag);
 						player.loadVideoById(theSong.youtube.videoId);
 
 						Session.set('songsPlayed',playedArr);
@@ -247,4 +258,29 @@ if (Meteor.isClient) {
 		},
 	});
 }
+var getWeightedSong = function(hashTag)
+{
+	var theTag = Tags.findOne({ text: hashTag});
+	var allSongs = songsInDB.find({ 'tagIds' : hashTag }).fetch();
+	if (!allSongs)
+		{
+			allSongs = songsInDB.find({}).fetch();
+		}
+		var totalCount = 0;
+		allSongs.forEach(function(each){
+			totalCount += each.rating;
+		});
+		var theSong;
+		var theNumber = Math.floor(Math.random() * totalCount);
+		var currentNum = 0;
+		allSongs.forEach(function(each){
+			var maxNum = currentNum + each.rating;
+			if (currentNum <= theNumber && maxNum > theNumber)
+				{
+					theSong = each;
+				}
+				currentNum = maxNum;
+		});
+return theSong;
 
+}
