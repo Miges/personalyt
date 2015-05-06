@@ -292,7 +292,7 @@ var getWeightedSong = function(hashTags)
 {
 	var theTags = Tags.find({ text: { $in : hashTags }}).fetch();
 	var tagIds = _.map(theTags, function(each){ return each._id; });
-	var allSongs = SongsInDB.find({ 'tagIds' : { $in: tagIds} }).fetch();
+	var allSongs = SongsInDB.find({ 'tagIds' : { $in: tagIds } }).fetch();
 	if (!allSongs || allSongs.length === 0)
 		{
 			allSongs = SongsInDB.find({}).fetch();
@@ -306,7 +306,7 @@ var getWeightedSong = function(hashTags)
 			totalCount += each.rating;
 		});
 		var theSong;
-		var theNumber = Math.floor(Math.random() * totalCount);
+		var theNumber = chance.integer({min: 0, max: totalCount})
 		var currentNum = 0;
 		allSongs.forEach(function(each){
 			var maxNum = currentNum;
