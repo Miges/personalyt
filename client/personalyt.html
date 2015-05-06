@@ -1,13 +1,19 @@
 <template name="main">
-  <h4>Tag to play:</h4>
-  <input type="textarea"  id="tagToPlay" class="input form-control tags-ac" rows="1"/>
     <div class="row">
-        <form id="search" method="post">
+      <div class="col-md-6">
+        <form id="tags" class="form-inline">
+        <label>Tags to play</label>
+        <input type="textarea"  id="tagToPlay" class="input-lg form-control tags-ac" rows="1" placeholder="Type #tags to play...."/>
+      </form>
+      </div>
+      <div class="col-md-6">
+        <form id="search">
             <div class="form-group has-feedback">
-                <input type="text" class="form-control search-input input-lg" id="query" name="query"/>
+                <input type="text" class="form-control search-input input-lg" id="query" name="query" placeholder="Search youtube..."/>
                 <span class="glyphicon glyphicon-search form-control-feedback"></span>
             </div>
         </form>
+      </div>
     </div>
     <div class="row">
         <div class="col-md-4">

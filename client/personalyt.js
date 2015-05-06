@@ -83,11 +83,27 @@ if (Meteor.isClient) {
 		'change .slider': function (event, template) {
 
 			var theSong = SongsInDB.findOne({"youtube.videoId": template.data.id.videoId});
-			if (!theSong || !theSong._id){
-				return;
-			}
-			var newRating = template.$('#' + event.target.id).val();
-			SongsInDB.update({ _id: theSong._id}, { $set: { rating: newRating }});
+			var song_id = theSong && theSong._id;
+			if (!theSong)
+				{
+					theSong = {};
+					theSong.rating = 50;
+					theSong.dateAdded = new Date();
+					theSong.youtube = {
+						videoId: template.data.id.videoId
+					};
+					try {
+						theSong.name = template.data.snippet.title;
+
+						theSong.thumbnailUrl = template.data.snippet.thumbnails.default.url;
+					}
+					catch(e)
+					{}
+					song_id = SongsInDB.insert(theSong);
+				}
+			var newRatingStr = template.$('#' + event.target.id).val();
+			var newRating = Number(newRatingStr);
+			SongsInDB.update({ _id: song_id}, { $set: { rating: newRating }});
 
 		},
 		'blur .tags-ac': function (event, template) {
@@ -102,6 +118,7 @@ if (Meteor.isClient) {
 			if (!theSong)
 			{
 				theSong = {};
+				theSong.rating = 50;
 				theSong.dateAdded = new Date();
 				theSong.youtube = {
 					videoId: template.data.id.videoId
@@ -172,8 +189,8 @@ theParentTemp = this;
 	var setupYT = function()
 	{
 		var temp = Template.instance();
-		var theTag = temp.$('#tagToPlay').val();
-		var theSong = getWeightedSong(theTag);
+		var theTags = getInputTags(theParentTemp);
+		var theSong = getWeightedSong(theTags);
 		Session.set('songsPlayed',[theSong.youtube.videoId]);
 		player = new YT.Player("player", {
 
@@ -199,11 +216,11 @@ theParentTemp = this;
 					//A video ended
 					if (event.data === 0)
 					{
+						var theTags = getInputTags(theParentTemp);
+						var theSong = getWeightedSong(theTags);
 						var playedArr = Session.get('songsPlayed');
 						playedArr.push(theSong.youtube.videoId);
 						//theSong = SongsInDB.findOne({"youtube.videoId": { $nin: playedArr}});
-						var theTag = temp.$('#tagToPlay').val();
-						var theSong = getWeightedSong(theTag);
 						player.loadVideoById(theSong.youtube.videoId);
 
 						Session.set('songsPlayed',playedArr);
@@ -256,26 +273,45 @@ theParentTemp = this;
 
 			Session.set('songsPlayed',playedArr);
 		},
+		'change #tagToPlay': function (event, template) {
+			var theTags = getInputTags(template);
+			var theSong = getWeightedSong(theTags);
+			var playedArr = Session.get('songsPlayed');
+			playedArr.push(theSong.youtube.videoId);
+			//theSong = SongsInDB.findOne({"youtube.videoId": { $nin: playedArr}});
+			player.loadVideoById(theSong.youtube.videoId);
+
+			Session.set('songsPlayed',playedArr);
+		},
 	});
 }
-var getWeightedSong = function(hashTag)
+var getWeightedSong = function(hashTags)
 {
-	var theTag = Tags.findOne({ text: hashTag});
-	var allSongs = songsInDB.find({ 'tagIds' : hashTag }).fetch();
-	if (!allSongs)
+	var theTags = Tags.find({ text: { $in : hashTags }}).fetch();
+	var tagIds = _.map(theTags, function(each){ return each._id; });
+	var allSongs = SongsInDB.find({ 'tagIds' : { $in: tagIds} }).fetch();
+	if (!allSongs || allSongs.length === 0)
 		{
-			allSongs = songsInDB.find({}).fetch();
+			allSongs = SongsInDB.find({}).fetch();
 		}
+		console.log(allSongs);
 		var totalCount = 0;
 		allSongs.forEach(function(each){
+			if(!each.rating){
+				return;
+			}
 			totalCount += each.rating;
 		});
 		var theSong;
 		var theNumber = Math.floor(Math.random() * totalCount);
 		var currentNum = 0;
 		allSongs.forEach(function(each){
-			var maxNum = currentNum + each.rating;
-			if (currentNum <= theNumber && maxNum > theNumber)
+			var maxNum = currentNum;
+			if(each.rating){
+				maxNum += each.rating;
+			}
+			console.log(totalCount, theNumber, currentNum, maxNum);
+			if (currentNum <= theNumber && maxNum >= theNumber)
 				{
 					theSong = each;
 				}
@@ -283,4 +319,18 @@ var getWeightedSong = function(hashTag)
 		});
 return theSong;
 
+}
+
+var getInputTags = function(template)
+{
+	var theTags = [""];
+	try
+	{
+		var theTagString = template.$('#tagToPlay').val();
+		var tagsSplit = theTagString.split("#");
+		theTags = _.map(tagsSplit, function(tag){return tag.trim();})
+	}
+	catch(e)
+	{}
+	return theTags;
 }
